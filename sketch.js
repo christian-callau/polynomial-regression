@@ -8,10 +8,10 @@ class PolynomialRegression {
     this.color = color
     this.coef = new Array(grade+1).fill()
     for (let i = 0; i < this.coef.length; i++) {
-      this.coef[i] = tf.variable(tf.scalar(0))
+      this.coef[i] = tf.variable(tf.scalar(Math.random()))
     }
     this.loss = (pred, labels) => pred.sub(labels).square().mean()
-    this.optimizer = tf.train.adam(0.2)
+    this.optimizer = tf.train.adam(0.1, 0.8)
   }
 
   f(x_vals) {
@@ -30,12 +30,11 @@ class PolynomialRegression {
   }
 
   getLossValue() {
-    if (points.length < 2) return 0
     return tf.tidy(() => this.getLoss().dataSync())[0]
   }
 
   update(points) {
-    if (points.length < 2 || mouseIsPressed) return this
+    if (points.length < 1 || mouseIsPressed) return this
     tf.tidy(() => this.optimizer.minimize(() => this.getLoss()))
     return this
   }
@@ -62,8 +61,7 @@ class PolynomialRegression {
 }
 
 const points = []
-// Polynomial Regression
-const PR = new PolynomialRegression('#2980b9', 5)
+const PR = new PolynomialRegression('#2980b9', 7)
 
 function setup() {
   createCenteredCanvas()
