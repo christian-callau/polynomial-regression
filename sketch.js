@@ -1,15 +1,10 @@
 'use strict';
 
-let PRloss = 0
-let frames = 0
-
 class PolynomialRegression {
   constructor(color, grade) {
     this.color = color
-    this.coef = new Array(grade+1).fill()
-    for (let i = 0; i < this.coef.length; i++) {
-      this.coef[i] = tf.variable(tf.scalar(Math.random()))
-    }
+    this.coef = new Array(grade + 1).fill()
+      .map(() => tf.variable(tf.scalar(Math.random())))
     this.loss = (pred, labels) => pred.sub(labels).square().mean()
     this.optimizer = tf.train.adam(0.1, 0.8)
   }
@@ -18,7 +13,7 @@ class PolynomialRegression {
     const xs = tf.tensor1d(x_vals)
     let ys = tf.zerosLike(xs)
     for (let i = 0; i < this.coef.length; i++)
-      ys = ys.add(xs.pow(tf.scalar(i)).mul(this.coef[this.coef.length-i-1]))
+      ys = ys.add(xs.pow(tf.scalar(i)).mul(this.coef[i]))
     return ys
   }
 
@@ -30,6 +25,7 @@ class PolynomialRegression {
   }
 
   getLossValue() {
+    if (points.length < 1) return this
     return tf.tidy(() => this.getLoss().dataSync())[0]
   }
 
@@ -40,28 +36,22 @@ class PolynomialRegression {
   }
 
   draw() {
-    let xs = []
-    for (let i = 0; i <= width; i++) {
-      xs.push(i)
-    }
-    xs = xs.map(x => map(x, 0, width, 0, 1))
+    const xs = [...Array(width + 1).keys()].map(x => map(x, 0, width, 0, 1))
     const ys = tf.tidy(() => this.f(xs).dataSync())
-
     beginShape()
     noFill()
     stroke('#2980b9')
     strokeWeight(2)
-    for (let i = 0; i <= width; i++) {
-      let x = map(xs[i], 0, 1, 0, width)
-      let y = map(ys[i], 1, 0, 0, width)
-      vertex(x, y)
-    }
+    for (let i = 0; i <= width; i++)
+      vertex(map(xs[i], 0, 1, 0, width), map(ys[i], 1, 0, 0, width))
     endShape()
   }
 }
 
 const points = []
 const PR = new PolynomialRegression('#2980b9', 7)
+let PRloss = 0
+let frames = 0
 
 function setup() {
   createCenteredCanvas()
