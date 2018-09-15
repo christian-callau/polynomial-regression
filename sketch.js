@@ -1,12 +1,13 @@
 'use strict';
 
 class PolynomialRegression {
-  constructor(color, grade) {
+  constructor(color, grade, learningRate, beta1) {
     this.color = color
     this.coef = new Array(grade + 1).fill()
       .map(() => tf.variable(tf.scalar(Math.random())))
     this.loss = (pred, labels) => pred.sub(labels).square().mean()
-    this.optimizer = tf.train.adam(0.1, 0.8)
+    this.optimizer = tf.train.adam(learningRate, beta1)
+    this.name = 'grade: '+grade+' rate: '+learningRate+' beta1: '+beta1
   }
 
   f(x_vals) {
@@ -29,6 +30,10 @@ class PolynomialRegression {
     return tf.tidy(() => this.getLoss().dataSync())[0]
   }
 
+  getName() {
+    return this.name
+  }
+
   update(points) {
     if (points.length < 1 || mouseIsPressed) return this
     tf.tidy(() => this.optimizer.minimize(() => this.getLoss()))
@@ -49,7 +54,7 @@ class PolynomialRegression {
 }
 
 const points = []
-const PR = new PolynomialRegression('#2980b9', 7)
+const PR = new PolynomialRegression('#2980b9', 7, .1, .8)
 let PRloss = 0
 let frames = 0
 
@@ -61,6 +66,7 @@ function setup() {
 
 function windowResized() {
   createCenteredCanvas()
+  draw()
 }
 
 function createCenteredCanvas() {
@@ -105,14 +111,14 @@ function drawFrame() {
   // Legend lines
   strokeWeight(2)
   stroke(PR.color)
-  line(width-140, 15, width-130, 15)
+  line(width-160, 15, width-150, 15)
   // Legend text
   noStroke()
   fill('#fff')
   textAlign(LEFT, CENTER)
   textSize(10)
-  text('Polynomial Regression', width-120, 15)
-  text('Loss: ' + PRloss, width-120, 30)
+  text(PR.getName(), width-140, 15)
+  text('loss: ' + PRloss, width-120, 30)
 }
 
 function mousePressed() {
